@@ -1,7 +1,7 @@
 <?php
 // лотырея угадай $cntGuessNumbers чисел из $cntNumbers чисел
 
-// функция подбора комбинации из cntGuessNumbers чисел
+// функция генерирует комбинации из cntGuessNumbers чисел
 function combinationNumbers($cntGuessNumbers, $cntNumbers, $countComb) {
     $result = [];
 
@@ -31,28 +31,37 @@ function combinationNumbers($cntGuessNumbers, $cntNumbers, $countComb) {
     return $result;
 }
 
-function valCompare($v1,$v2) {
-    if ($v1===$v2) return 0;
-    if ($v1 > $v2) return 1;
-    return -1;
+// функция сравнивает комбинации и выигрыш, прибавляет к комбинации игрока элемент, равный количеству
+// угаданных чиселб типа в БД в отдельной колонке проставляет количество угаданных чисел
+function drawResultFun($playerCombinations, $resultLottery) {
+
+    function valCompare($v1,$v2) {
+        if ($v1===$v2) return 0;
+        if ($v1 > $v2) return 1;
+        return -1;
+    }
+
+    foreach ($playerCombinations as $key => $val) {
+       array_push($playerCombinations[$key], count(array_uintersect($val,$resultLottery,'valCompare')));
+    }
+    return $playerCombinations;
 }
 
-// функция создает массив выигрышных билетов, значению ключа соответствует кол-во отгаданных чисел в варианте
-function drawResultFun($cntGuessNumbers, $maxCntWinNumbers, $playerCombinations, $resultLottery) {
-    // делаю пустой массив результата розыгрыша в звисимости от мин количества чисел для выигрыша
-    $drawResult = [];
-    for($i = $maxCntWinNumbers; $i <= $cntGuessNumbers; $i++){
-        $drawResult[$i] = array();
+// функция выводит на экран результат общего количества выигрышных билетов
+// типа запроса в БД
+function totalResult($cntGuessNumbers, $maxCntWinNumbers,$playerCombinations) {
+        $val = [];
+    for ($i = 0; $i <= $cntGuessNumbers; $i++) {
+        array_push($val, 0);
     }
-    // перебор вариантов и запись в $drawResult
-    foreach ($playerCombinations as $val) {
-        $cntTotal = count(array_uintersect($val,$resultLottery,'valCompare'));
-        if ($cntTotal >= $maxCntWinNumbers) {
-            array_push($drawResult[$cntTotal], $val);
-        }
+
+    foreach ($playerCombinations as $key => $value) {
+        $val[array_pop($playerCombinations[$key])]++;
     }
-    // возвращаем массив результата розыгрыша $drawResult
-    return $drawResult;
+
+    for ($i = $maxCntWinNumbers; $i <= $cntGuessNumbers; $i++) {
+        echo 'Угаданы ' . $i . ' числа - ' . $val[$i] . ' билетов.' . '<br>';
+    }
 }
 
 // -----------------------------------------------------------------------------------------------------
@@ -60,16 +69,17 @@ function drawResultFun($cntGuessNumbers, $maxCntWinNumbers, $playerCombinations,
 $cntNumbers = 36;            // из какого количества чисел угадываем
 $cntGuessNumbers = 5;        // количество угадываемых чисел
 $maxCntWinNumbers = 3;       // минимальное количество чисел для выигрыша
-$cntGuessOption = 500000;     // количество вариантов угадывания
+$cntGuessOption = 1000;      // количество вариантов угадывания
 
-// результат лототрона resultLottery
+// получаем результат лототрона resultLottery
 $resultLottery = combinationNumbers($cntGuessNumbers, $cntNumbers,  1);
 
-// массив комбинаций игроков лотыреи playerCombinations
+// получаем массив комбинаций игроков лотыреи playerCombinations
 $playerCombinations = combinationNumbers($cntGuessNumbers, $cntNumbers, $cntGuessOption);
 
-// массив выигрышных билетов
-$drawResult = drawResultFun($cntGuessNumbers, $maxCntWinNumbers, $playerCombinations, $resultLottery);
+// дабавляем в массив комбинаций игроков лотыреи количество отгаданных чисел
+// каждому игроку (последний эл массива комбинации чисел), типа сделали INSERT
+$playerCombinations = drawResultFun($playerCombinations, $resultLottery);
 
 
 // вывод результата
@@ -79,15 +89,10 @@ echo 'Минимальное количество чисел для выигры
 echo 'Количество комбинаций игроков - ' . $cntGuessOption  . '<br><hr><br>';
 
 $winningComb = implode(", ", $resultLottery);
-echo "Выигрышный вариант:  $winningComb" . '<br>';
+echo "Выигрышный вариант:  $winningComb" . '<br><br>';
 
-foreach ($drawResult as $key => $value) {
-    echo 'Угаданы ' . $key . ' числа - ' . count($drawResult[$key]) . ' билетов.' . '<br>';
-}
-
-
-
-
+// выводим количество выигрышных билетов
+totalResult($cntGuessNumbers, $maxCntWinNumbers,$playerCombinations);
 
 
 
