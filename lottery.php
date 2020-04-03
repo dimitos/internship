@@ -60,7 +60,7 @@ function drawResultFun($cntGuessNumbers, $maxCntWinNumbers, $playerCombinations,
 $cntNumbers = 36;            // из какого количества чисел угадываем
 $cntGuessNumbers = 5;        // количество угадываемых чисел
 $maxCntWinNumbers = 3;       // минимальное количество чисел для выигрыша
-$cntGuessOption = 500000;     // количество вариантов угадывания
+$cntGuessOption = 1000;     // количество вариантов угадывания
 
 // результат лототрона resultLottery
 $resultLottery = combinationNumbers($cntGuessNumbers, $cntNumbers,  1);
