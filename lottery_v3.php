@@ -34,22 +34,19 @@ function combinationNumbers($cntGuessNumbers, $cntNumbers, $countComb) {
 // функция сравнивает комбинации и выигрыш, прибавляет к комбинации игрока элемент, равный количеству
 // угаданных чиселб типа в БД в отдельной колонке проставляет количество угаданных чисел
 function drawResultFun($playerCombinations, $resultLottery) {
-
-    function valCompare($v1,$v2) {
-        if ($v1===$v2) return 0;
-        if ($v1 > $v2) return 1;
-        return -1;
-    }
-
     foreach ($playerCombinations as $key => $val) {
-       array_push($playerCombinations[$key], count(array_uintersect($val,$resultLottery,'valCompare')));
+        $cnt = 0;
+        foreach ($resultLottery as $value){
+            if (in_array($value, $val)) $cnt++;
+        }
+        array_push($playerCombinations[$key], $cnt);
     }
     return $playerCombinations;
 }
 
 // функция выводит на экран результат общего количества выигрышных билетов
 // типа запроса в БД
-function totalResult($cntGuessNumbers, $maxCntWinNumbers,$playerCombinations) {
+function totalResult($cntGuessNumbers, $maxCntWinNumbers, $playerCombinations) {
     $val = array_fill(0, $cntGuessNumbers + 1, 0);
 
     foreach ($playerCombinations as $key => $value) {
