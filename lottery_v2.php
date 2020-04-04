@@ -50,10 +50,7 @@ function drawResultFun($playerCombinations, $resultLottery) {
 // функция выводит на экран результат общего количества выигрышных билетов
 // типа запроса в БД
 function totalResult($cntGuessNumbers, $maxCntWinNumbers,$playerCombinations) {
-        $val = [];
-    for ($i = 0; $i <= $cntGuessNumbers; $i++) {
-        array_push($val, 0);
-    }
+    $val = array_fill(0, $cntGuessNumbers + 1, 0);
 
     foreach ($playerCombinations as $key => $value) {
         $val[array_pop($playerCombinations[$key])]++;
