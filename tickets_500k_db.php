@@ -86,10 +86,9 @@ $createTable =
     "CREATE TABLE `lotto`.`tickets` (
   `id` SERIAL PRIMARY KEY,
   `ticket` BIGINT  NULL,
-  `combination` VARCHAR(50)
-  
+  `combination` VARCHAR(50)  
   )";
-//INDEX (`combination`)
+
 if (mysqli_query($link, $createTable)) {
     echo "Таблица создана успешно" . '<br>';
 } else {
