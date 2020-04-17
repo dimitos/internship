@@ -3,24 +3,13 @@
 // лотырея угадай $cntGuessNumbers чисел из $cntNumbers чисел
 
 // функция генерирует комбинации из cntGuessNumbers чисел
-// убрал функцию сравнения in_array, сделал алгоритм на изъятии одинаковых элементов - уменьшил время работы на 10%
+// убрал функцию сравнения in_array, сделал алгоритм на изъятии одинаковых элементов и убрал лишний код
+// - уменьшил время работы на 10%
 
 function combinationNumbers($cntGuessNumbers, $cntNumbers, $countComb)
 {
     $result = [];
 
-   // if ($countComb == 1) {
-//        do {
-//            $cnt = $cntGuessNumbers - count($result);
-//            for ($i = 1; $i <= $cnt; $i++) {
-//                $num = mt_rand(1, $cntNumbers);
-//                array_push($result, $num);
-//            }
-//            $result = array_unique($result);
-//        }
-//        while (count($result) < $cntGuessNumbers);
-//        sort($result);
-//    } else {
         for ($i = 0; $i < $countComb; $i++) {
             $result[$i][0] = mt_rand(1, $cntNumbers);
             do {
@@ -33,11 +22,8 @@ function combinationNumbers($cntGuessNumbers, $cntNumbers, $countComb)
             }
             while (count($result[$i]) < $cntGuessNumbers);
             sort($result[$i]);
-            //echo ($result[$i]) . '<br>';
-
         }
-    //}
-    //var_dump($result);
+
     return $result;
 }
 
@@ -73,7 +59,7 @@ function totalResult($cntGuessNumbers, $maxCntWinNumbers, $playerCombinations)
 $cntNumbers = 36;            // из какого количества чисел угадываем
 $cntGuessNumbers = 5;        // количество угадываемых чисел
 $maxCntWinNumbers = 3;       // минимальное количество чисел для выигрыша
-$cntGuessOption = 100000;       // количество вариантов угадывания
+$cntGuessOption = 500000;       // количество вариантов угадывания
 
 // получаем результат лототрона resultLottery
 $resultLottery = combinationNumbers($cntGuessNumbers, $cntNumbers, 1);

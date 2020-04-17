@@ -1,8 +1,13 @@
 <?php
-set_time_limit(800);
+set_time_limit(600);
 // 500.000 мой ноут сделал за 102 секунды.
+// без индекса 66 секунд, индекс после заливки 78 секунд
+
 // 1.000.000 мой ноут сделал за 252 секунды.
-// В 2,5 раза разница из-за увелиыения массива номеров или надо делить txt файл на части и по частям заливать?
+// В 2,5 раза разница из-за увеличения массива номеров или надо делить txt файл на части и по частям заливать?
+// без индекса 132 секунды, индекс после заливки 156 секунд (время заливки меньше на 38%)
+
+// получается, что лучше сначала залить, а затем поключать индексы
 
 // функция генерирует комбинацию из cntGuessNumbers чисел
 function combinationNumbers($cntGuessNumbers, $cntNumbers) {
@@ -81,9 +86,10 @@ $createTable =
     "CREATE TABLE `lotto`.`tickets` (
   `id` SERIAL PRIMARY KEY,
   `ticket` BIGINT  NULL,
-  `combination` VARCHAR(50),
-  INDEX (`combination`)
+  `combination` VARCHAR(50)
+  
   )";
+//INDEX (`combination`)
 if (mysqli_query($link, $createTable)) {
     echo "Таблица создана успешно" . '<br>';
 } else {
@@ -99,6 +105,8 @@ $q_import =
     ENCLOSED BY '\"'
     (ticket, combination)";
 mysqli_query($link, $q_import);
+
+mysqli_query($link, "ALTER TABLE `lotto`.`tickets` ADD INDEX (`combination`)");
 
 mysqli_close($link);
 
