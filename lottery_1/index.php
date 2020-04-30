@@ -7,22 +7,20 @@
 //          win_sum  сумма выигрыша комбинации
 
 set_time_limit(600);
-include __DIR__ . '/config/bd.php';      // подключаемся  к базе
+
+include 'config/bd.php';
 include_once ('engine/function.php');   // подключаем файл функций
 
 echo "<h3>Отметьте, какую лотырею будем проводить</h3>
-<form name='form1' method='post' action=''>
+<form method='post'>
 <input type='radio' name='lot' value='36' /> 5 из 36 <br>
 <input type='radio' name='lot' value='45' /> 6 из 45<br><br>
 <h3>Введите количество билетов для формирования рандомных комбинаций до 500000 штук.</h3>
 <input name='cntTic' type='text' size='20' maxlength='6'><br><br>
-
-
-<input type='submit' name='button' value='Проверить данные'>
+<input type='submit' value='Создать базу билетов с комбинациями'>
 </form>";
 
- var_dump($_POST);
-
+global $cntNumbers;
 
 $cntNumbers = $_POST['lot'];  // из какого количества чисел угадываем
 if ($_POST['lot'] == 36) {
@@ -35,20 +33,11 @@ if ($_POST['lot'] == 36) {
 
 $cntGuessOption = $_POST['cntTic'];         // количество билетов в розыгрыше
 
+// проверочка стартовых данных
+validStart($cntNumbers, $cntGuessOption, $cntGuessNumbers);
 
-if (validStart($cntNumbers, $cntGuessOption)){
-    echo "<h3>Лотырея {$cntGuessNumbers} из {$cntNumbers}. Количество билетов: {$cntGuessOption}.</h3>";
-};
-
-echo "<form name='form1' method='post' action=''>
-<input type='submit' name='button' value='Сформировать базу комбинаций'>
-</form>";
-
-
-echo "<h3>Подождите. Формируется база билетов с комбинациями</h3>";
-
-
-
+echo "<h3>Создаем базу</h3>";
+$start=gettimeofday();     // тайминг
 
 $arrayTicket = ticketNumbers($cntGuessOption);   // создаем массив сномерами билетов
 
@@ -64,9 +53,7 @@ fclose($fp);    // закрыли файл
 // создали базу
 mysqli_query($link, "DROP DATABASE IF EXISTS `lotto`");
 $createDB = "CREATE DATABASE `lotto`";
-if (mysqli_query($link, $createDB)) {
-    echo "База данных создана успешно" . '<br>';
-} else {
+if (!mysqli_query($link, $createDB)) {
     echo "Ошибка создания базы данных: " . mysqli_error($link);
 }
 
@@ -99,5 +86,27 @@ mysqli_query($link, "ALTER TABLE `lotto`.`tickets` ADD INDEX (`combination`, `co
 mysqli_close($link);
 unlink('/file.txt');  // удалили промежуточный файл
 
-echo "<h3>База сформирована</h3>";
+
+$end=gettimeofday();
+$totalTime = (float)($end['sec'] - $start['sec']);
+echo "База сформирована за $totalTime сек" . '<br><br>';
+?>
+
+<a href='draw.php' style='
+       text-decoration: none;
+       background-color: #7af4f4;
+       font-family: sans-serif;
+       font-size: 20px;
+       padding: 7px 30px;
+       border-radius: 15px;
+       margin-top: 30px;
+       margin-left: 50px;'>
+    Перейти к розыгрышу</a>
+
+
+
+
+
+
+
 
