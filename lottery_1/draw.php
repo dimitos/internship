@@ -16,7 +16,7 @@ if ($cntGuessNumbers == 5){
     $maxCntWinNumbers = 4;
 }
 
-echo "<h3>Лотырея $cntGuessNumbers из $cntNumbers. </h3>
+echo "<h3>Лотерея $cntGuessNumbers из $cntNumbers. </h3>
     <h3>Введите выигрышную комбинацию</h3>
     <form method='post'>";
 
@@ -138,7 +138,7 @@ echo "Проверка заняла $totalTime сек" . '<br><br>';
        border-radius: 15px;
        margin-top: 30px;
        margin-left: 50px;'>
-    Перейти к новой лотырее</a>
+    Перейти к новой лотерее</a>
 
 
 

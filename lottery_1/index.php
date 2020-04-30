@@ -11,7 +11,7 @@ set_time_limit(600);
 include 'config/bd.php';
 include_once ('engine/function.php');   // подключаем файл функций
 
-echo "<h3>Отметьте, какую лотырею будем проводить</h3>
+echo "<h3>Отметьте, какую лотерею будем проводить</h3>
 <form method='post'>
 <input type='radio' name='lot' value='36' /> 5 из 36 <br>
 <input type='radio' name='lot' value='45' /> 6 из 45<br><br>
