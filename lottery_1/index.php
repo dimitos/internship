@@ -6,8 +6,9 @@
 //          count_guessed количество угаданных чисел в комбинации,
 //          win_sum  сумма выигрыша комбинации
 
-require_once 'config/db_config.php';
-require_once 'engine/function.php';   // подключаем файл функций
+require_once 'engine/function.php';
+require_once 'engine/pdo_connect.php';
+$db = new Database();
 
 echo "<h3>Отметьте, какую лотерею будем проводить</h3>
 <form method='post'>
@@ -27,39 +28,34 @@ if ($_POST['lot'] == 36) {
     $maxCntWinNumbers = 4;       // минимальное количество чисел для выигрыша
 }
 
-$cntGuessOption = $_POST['cntTic'];         // количество билетов в розыгрыше
+$cntGuessOption = trim($_POST['cntTic']);         // количество билетов в розыгрыше, удаляем пробелы вначале и конце
 
 // проверочка стартовых данных
 validStart($cntNumbers, $cntGuessOption, $cntGuessNumbers);
 
-echo "<h3>Создаем базу</h3>";
 $start=gettimeofday();     // тайминг
 
 $arrayTicket = ticketNumbers($cntGuessOption);   // создаем массив сномерами билетов
 
 // делаем запись массива номеров билетов и комбинаций игроков в файл для заливки его в БД
-$fp = fopen('/file.txt', 'w'); // окрыли файл
+$fp = fopen('/file.txt', 'w');
 foreach ($arrayTicket as $fields) {
     $row = array($fields, implode(', ', combinationNumbers($cntGuessNumbers, $cntNumbers)));
-    fputcsv($fp, $row);   // сделали запись в файл
+    fputcsv($fp, $row);
 }
-fclose($fp);    // закрыли файл
+fclose($fp);
 
 //------------------------------------------------------------------------------------------------------
+echo "<h3>Создаем базу</h3>";
+// создаём базу
+$db->execute("DROP DATABASE IF EXISTS `lotto`");
+$db->execute("CREATE DATABASE `lotto`");
+$db->execute("DROP TABLE IF EXISTS `lotto`.`tickets`");
 
-$link = new mysqli($host, $user, $password, $database)
-or die("Ошибка " . mysqli_error($link));
+// проверка на создание базы
 
-// создали базу
-mysqli_query($link, "DROP DATABASE IF EXISTS `lotto`");
-$createDB = "CREATE DATABASE `lotto`";
-if (!mysqli_query($link, $createDB)) {
-    echo "Ошибка создания базы данных: " . mysqli_error($link);
-}
-
-// создали табличку
-mysqli_query($link, "DROP TABLE IF EXISTS `lotto`.`tickets`");
-$createTable =
+// создаём табличку
+$create_table =
     "CREATE TABLE `lotto`.`tickets` (
   `id` SERIAL PRIMARY KEY,
   `ticket` BIGINT  NULL,
@@ -67,29 +63,26 @@ $createTable =
   `count_guessed` INT(2) DEFAULT 0,
   `win_sum` BIGINT(10) DEFAULT 0
   )";
-if (!mysqli_query($link, $createTable)) {
-    echo "Ошибка создания базы данных: " . mysqli_error($link);
-}
+$db->execute($create_table);
+
+// проверка на создание таблицы
 
 // заливаем в БД файл номеров билетов и комбинаций игроков
-mysqli_query($link, "USE `lotto`");
-$q_import =
+$db->execute("USE `lotto`");
+$import_file_db =
     "LOAD DATA  INFILE '/file.txt'
     INTO TABLE tickets
     FIELDS TERMINATED BY ','
     ENCLOSED BY '\"'
     (ticket, combination)";
-mysqli_query($link, $q_import);
+$db->execute($import_file_db);
+$db->execute("ALTER TABLE `lotto`.`tickets` ADD INDEX (`combination`, `count_guessed`, `win_summ`)");
 
-mysqli_query($link, "ALTER TABLE `lotto`.`tickets` ADD INDEX (`combination`, `count_guessed`, `win_summ`)");
-
-mysqli_close($link);
 unlink('/file.txt');  // удалили промежуточный файл
 
-
 $end=gettimeofday();
-$totalTime = (float)($end['sec'] - $start['sec']);
-echo "База сформирована за $totalTime сек" . '<br><br>';
+$total_time = (float)($end['sec'] - $start['sec']);
+echo "База сформирована за $total_time сек" . '<br><br>';
 ?>
 
 <a href='draw.php' style='

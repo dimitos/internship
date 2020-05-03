@@ -1,14 +1,9 @@
 <?php
 
-require_once 'config/db_config.php';
-$link = new mysqli($host, $user, $password, $database)
-or die("Ошибка " . mysqli_error($link));
-
-// запрашиваем выигрышную комбинацию и суммы выигрышей
-
-$sql = mysqli_query($link, "SELECT `combination` FROM `lotto`.`tickets` LIMIT 1");
-$row = mysqli_fetch_assoc($sql);
-$cntGuessNumbers = count(explode(', ', $row['combination']));
+require_once 'engine/pdo_connect.php';
+$db = new Database();
+$row = $db->query("SELECT `combination` FROM `lotto`.`tickets` LIMIT 1");
+$cntGuessNumbers = count(explode(', ', $row[0]['combination']));
 
 if ($cntGuessNumbers == 5){
     $cntNumbers = 36;
@@ -18,6 +13,8 @@ if ($cntGuessNumbers == 5){
     $maxCntWinNumbers = 4;
 }
 
+//------------------------------------------------------------------------------
+// запрашиваем выигрышную комбинацию и суммы выигрышей
 echo "<h3>Лотерея $cntGuessNumbers из $cntNumbers. </h3>
     <h3>Введите выигрышную комбинацию</h3>
     <form method='post'>";
@@ -79,52 +76,46 @@ sort($winComb);
 // вносим изменения в БД
 
 // сбрасываем на DEFAULT столбцы count_guessed и win_sum
-mysqli_query($link, "UPDATE `lotto`.`tickets` SET `count_guessed` = DEFAULT, `win_sum` = DEFAULT");
+$db->execute("UPDATE `lotto`.`tickets` SET `count_guessed` = DEFAULT, `win_sum` = DEFAULT");
 
 // вносим в столбец count_guessed количество угаданных чисел в комбинации
 foreach ($winComb as $value) {
     $query =
         "UPDATE `lotto`.`tickets` SET `count_guessed` = (`count_guessed` + 1) WHERE `combination` LIKE '%{$value}%'";
-    mysqli_query($link, $query);
+    $db->execute($query);
 }
 
 // вносим в столбец win_sum суммы выигрышей
 foreach ($winSum as $key => $value) {
     $query =
         "UPDATE `lotto`.`tickets` SET `win_sum` = {$value} where `lotto`.`tickets`.`count_guessed` = {$key}";
-    mysqli_query($link, $query);
+    $db->execute($query);
 }
 
 //------------------------------------------------------------------------------------------------------------
 // выводим результаты розыгрыша
 $comb = implode(', ', $winComb);
 
-$cntGuessOption = mysqli_fetch_assoc(mysqli_query($link,
-    "SELECT count(*)  AS `cnt`  FROM `lotto`.`tickets`"));
+$cntGuessOption = $db->query("SELECT count(*)  AS `cnt`  FROM `lotto`.`tickets`");
 
-$totWinTickets = mysqli_fetch_assoc(mysqli_query($link,
-    "SELECT count(*)  AS `cnt`  FROM `lotto`.`tickets`  WHERE `win_sum` != 0 "));
-
+$totWinTickets = $db->query("SELECT count(*)  AS `cnt`  FROM `lotto`.`tickets`  WHERE `win_sum` != 0 ");
 
 echo "
 <h2>Выигрышная комбинация - $comb</h2>
-<h3>Всего играло {$cntGuessOption['cnt']} билетов из них {$totWinTickets['cnt']} выигрышных</h3>
+<h3>Всего играло {$cntGuessOption[0]['cnt']} билетов из них {$totWinTickets[0]['cnt']} выигрышных</h3>
 ";
 
 foreach ($winSum as $key => $value) {
-    $winTickets = mysqli_fetch_assoc(mysqli_query($link,
-        "SELECT count(*)  AS `cnt`  FROM `lotto`.`tickets`  WHERE `count_guessed` = {$key}"));
+    $winTickets = $db->query("SELECT count(*)  AS `cnt`  FROM `lotto`.`tickets`  WHERE `count_guessed` = {$key}");
 
-    if ($winTickets['cnt'] == 0) {
+    if ($winTickets[0]['cnt'] == 0) {
         echo "
         <h3>$key чисел никто не угадал.</h3>";
     } else {
         echo "
-        <h3>Угаданных чисел $key -   {$winTickets['cnt']} билетов. Выигрыш по $value рублей.</h3>";
+        <h3>Угаданных чисел $key -   {$winTickets[0]['cnt']} билетов. Выигрыш по $value рублей.</h3>";
     }
 }
-
-mysqli_close($link);
 
 $end=gettimeofday();
 $totalTime = (float)($end['sec'] - $start['sec']);
