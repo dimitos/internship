@@ -3,7 +3,7 @@
 // функция генерирует комбинацию из cntGuessNumbers чисел
 function combinationNumbers($cntGuessNumbers, $cntNumbers) {
     $result = [];
-    do {
+    while (count($result) < $cntGuessNumbers) {
         $cnt = $cntGuessNumbers - count($result);
         for ($j = 0; $j < $cnt; $j++) {
             $num = mt_rand(1, $cntNumbers);
@@ -14,7 +14,7 @@ function combinationNumbers($cntGuessNumbers, $cntNumbers) {
         }
         $result = array_unique($result);
     }
-    while (count($result) < $cntGuessNumbers);
+
     sort($result);
     return $result;
 }
