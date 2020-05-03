@@ -1,6 +1,8 @@
 <?php
 
-include 'config/bd.php';
+require_once 'config/db_config.php';
+$link = new mysqli($host, $user, $password, $database)
+or die("Ошибка " . mysqli_error($link));
 
 // запрашиваем выигрышную комбинацию и суммы выигрышей
 

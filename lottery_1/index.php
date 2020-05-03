@@ -6,10 +6,8 @@
 //          count_guessed количество угаданных чисел в комбинации,
 //          win_sum  сумма выигрыша комбинации
 
-set_time_limit(600);
-
-include 'config/bd.php';
-include_once ('engine/function.php');   // подключаем файл функций
+require_once 'config/db_config.php';
+require_once 'engine/function.php';   // подключаем файл функций
 
 echo "<h3>Отметьте, какую лотерею будем проводить</h3>
 <form method='post'>
@@ -19,8 +17,6 @@ echo "<h3>Отметьте, какую лотерею будем проводи�
 <input name='cntTic' type='text' size='20' maxlength='6'><br><br>
 <input type='submit' value='Создать базу билетов с комбинациями'>
 </form>";
-
-global $cntNumbers;
 
 $cntNumbers = $_POST['lot'];  // из какого количества чисел угадываем
 if ($_POST['lot'] == 36) {
@@ -50,6 +46,10 @@ foreach ($arrayTicket as $fields) {
 fclose($fp);    // закрыли файл
 
 //------------------------------------------------------------------------------------------------------
+
+$link = new mysqli($host, $user, $password, $database)
+or die("Ошибка " . mysqli_error($link));
+
 // создали базу
 mysqli_query($link, "DROP DATABASE IF EXISTS `lotto`");
 $createDB = "CREATE DATABASE `lotto`";
