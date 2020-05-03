@@ -1,6 +1,8 @@
 <?php
 
-Class Database{
+
+class Database
+{
     private $link;  //здесь будем сохранять соединение
 
     /**
@@ -55,13 +57,4 @@ Class Database{
 
         return $result;
     }
-
 }
-//
-//$db = new Database();
-//
-//$sss = $db->query("SELECT * FROM lotto.tickets ORDER BY count_guessed desc limit 5");
-//var_dump($sss);
-
-
-

@@ -7,7 +7,7 @@
 //          win_sum  сумма выигрыша комбинации
 
 require_once 'engine/function.php';
-require_once 'engine/pdo_connect.php';
+require_once 'engine/Database.php';
 $db = new Database();
 
 echo "<h3>Отметьте, какую лотерею будем проводить</h3>

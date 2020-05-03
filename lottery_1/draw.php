@@ -1,6 +1,6 @@
 <?php
 
-require_once 'engine/pdo_connect.php';
+require_once 'engine/Database.php';
 $db = new Database();
 $row = $db->query("SELECT `combination` FROM `lotto`.`tickets` LIMIT 1");
 $cntGuessNumbers = count(explode(', ', $row[0]['combination']));
