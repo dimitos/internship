@@ -47,43 +47,43 @@ foreach ($arrayTicket as $fields) {
 fclose($fp);
 
 //------------------------------------------------------------------------------------------------------
-echo "<h3>Создаем базу</h3>";
+echo '<h3>Создаем базу</h3>';
 // создаём базу
-$db->query("DROP DATABASE IF EXISTS `lotto`");
-$db->query("CREATE DATABASE `lotto`");
-$db->query("DROP TABLE IF EXISTS `lotto`.`tickets`");
+$db->query('DROP DATABASE IF EXISTS `lotto`');
+$db->query('CREATE DATABASE `lotto`');
+$db->query('DROP TABLE IF EXISTS `lotto`.`tickets`');
 
 // проверка на создание базы
 
 // создаём табличку
 $create_table =
-    "CREATE TABLE `lotto`.`tickets` (
+    'CREATE TABLE `lotto`.`tickets` (
   `id` SERIAL PRIMARY KEY,
   `ticket` BIGINT  NULL,
   `combination` VARCHAR(50),
   `count_guessed` INT(2) DEFAULT 0,
   `win_sum` BIGINT(10) DEFAULT 0
-  )";
+  )';
 $db->query($create_table);
 
 // проверка на создание таблицы
 
 // заливаем в БД файл номеров билетов и комбинаций игроков
-$db->query("USE `lotto`");
+$db->query('USE `lotto`');
 $import_file_db =
-    "LOAD DATA  INFILE '/file.txt'
+    'LOAD DATA  INFILE "/file.txt"
     INTO TABLE tickets
-    FIELDS TERMINATED BY ','
-    ENCLOSED BY '\"'
-    (ticket, combination)";
+    FIELDS TERMINATED BY ","
+    ENCLOSED BY \'"\'
+    (ticket, combination)';
 $db->query($import_file_db);
-//$db->query("ALTER TABLE `lotto`.`tickets` ADD INDEX (`combination`, `count_guessed`, `win_summ`)");
+$db->query('ALTER TABLE `lotto`.`tickets` ADD INDEX (`combination`, `count_guessed`, `win_sum`)');
 
 unlink('/file.txt');  // удалили промежуточный файл
 
 $end=gettimeofday();
 $total_time = (float)($end['sec'] - $start['sec']);
-echo "База сформирована за $total_time сек" . '<br><br>';
+echo 'База сформирована за ' . $total_time . ' сек.<br><br>';
 ?>
 
 <a href='draw.php' style='

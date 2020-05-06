@@ -4,7 +4,7 @@ $config = require_once 'config/db_config.php';
 require_once 'engine/Database.php';
 $db = new Database($config);
 
-$row = $db->query("SELECT `combination` FROM `lotto`.`tickets` LIMIT 1");
+$row = $db->query('SELECT `combination` FROM `lotto`.`tickets` LIMIT 1');
 $cntGuessNumbers = count(explode(', ', $row[0]['combination']));
 
 if ($cntGuessNumbers == 5){
@@ -28,7 +28,7 @@ for ($i = 1; $i <= $cntGuessNumbers; $i++){
     </label>";
 }
 
-echo "<br><br><h3>Введите выигрышные суммы за количество угаданных чисел</h3>";
+echo '<br><br><h3>Введите выигрышные суммы за количество угаданных чисел</h3>';
 $index = $cntGuessNumbers + $maxCntWinNumbers;
 for ($i = $cntGuessNumbers + 1; $i <= $index; $i++){
     $cnt = $i - $maxCntWinNumbers;
@@ -50,8 +50,8 @@ $start=gettimeofday();     // тайминг
 
 foreach ($_POST as $value){
     if ($value == ''|| !preg_match("|^[\d]*$|", $value)) {
-        exit("Необходимо заполнить все поля натуральными числами, 
-        а для выигрышной комбинации - в диапазоне от 1 до $cntNumbers без совпадений");
+        exit('Необходимо заполнить все поля натуральными числами, 
+        а для выигрышной комбинации - в диапазоне от 1 до ' . $cntNumbers . ' без совпадений');
     }
 }
 
@@ -62,7 +62,7 @@ $winSum = [];
 foreach ($_POST as $key => $value){
     if($key <= $cntGuessNumbers){
         if(1 > $value || $value > $cntNumbers || in_array($value, $winComb)){
-            exit("Числа в комбинации должны быть диапазоне от 1 до $cntNumbers без совпадений");
+            exit('Числа в комбинации должны быть диапазоне от 1 до ' . $cntNumbers . ' без совпадений');
         }
         if (strlen($value) == 1) {
             $value = '0' . $value;
@@ -78,7 +78,7 @@ sort($winComb);
 // вносим изменения в БД
 
 // сбрасываем на DEFAULT столбцы count_guessed и win_sum
-$db->query("UPDATE `lotto`.`tickets` SET `count_guessed` = DEFAULT, `win_sum` = DEFAULT");
+$db->query('UPDATE `lotto`.`tickets` SET `count_guessed` = DEFAULT, `win_sum` = DEFAULT');
 
 // вносим в столбец count_guessed количество угаданных чисел в комбинации
 foreach ($winComb as $value) {
@@ -90,7 +90,7 @@ foreach ($winComb as $value) {
 // вносим в столбец win_sum суммы выигрышей
 foreach ($winSum as $key => $value) {
     $query =
-        "UPDATE `lotto`.`tickets` SET `win_sum` = {$value} where `lotto`.`tickets`.`count_guessed` = {$key}";
+        'UPDATE `lotto`.`tickets` SET `win_sum` = ' . $value . ' where `lotto`.`tickets`.`count_guessed` = ' . $key;
     $db->query($query);
 }
 
@@ -98,9 +98,9 @@ foreach ($winSum as $key => $value) {
 // выводим результаты розыгрыша
 $comb = implode(', ', $winComb);
 
-$cntGuessOption = $db->query("SELECT count(*)  AS `cnt`  FROM `lotto`.`tickets`");
+$cntGuessOption = $db->query('SELECT count(*)  AS `cnt`  FROM `lotto`.`tickets`');
 
-$totWinTickets = $db->query("SELECT count(*)  AS `cnt`  FROM `lotto`.`tickets`  WHERE `win_sum` != 0 ");
+$totWinTickets = $db->query('SELECT count(*)  AS `cnt`  FROM `lotto`.`tickets`  WHERE `win_sum` != 0 ');
 
 echo "
 <h2>Выигрышная комбинация - $comb</h2>
@@ -108,7 +108,7 @@ echo "
 ";
 
 foreach ($winSum as $key => $value) {
-    $winTickets = $db->query("SELECT count(*)  AS `cnt`  FROM `lotto`.`tickets`  WHERE `count_guessed` = {$key}");
+    $winTickets = $db->query('SELECT count(*)  AS `cnt`  FROM `lotto`.`tickets`  WHERE `count_guessed` = ' . $key);
 
     if ($winTickets[0]['cnt'] == 0) {
         echo "
@@ -121,7 +121,7 @@ foreach ($winSum as $key => $value) {
 
 $end=gettimeofday();
 $totalTime = (float)($end['sec'] - $start['sec']);
-echo "Проверка заняла $totalTime сек" . '<br><br>';
+echo 'Проверка заняла ' . $totalTime . ' сек.<br><br>';
 ?>
 
 <a href='index.php'style='

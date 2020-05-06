@@ -38,14 +38,14 @@ function ticketNumbers($cntGuessOption) {
 function validStart($cntNumbers, $cntGuessOption, $cntGuessNumbers){
 
     if ($cntNumbers == '') {
-        exit("Необходимо выбрать лотерею");
+        exit('Необходимо выбрать лотерею');
     }
 
     if ($cntGuessOption == '' || $cntGuessOption > 500000 || !preg_match("|^[\d]*$|", $cntGuessOption)) {
-        exit("Необходимо ввести количество билетов натуральными числом до 500000");
+        exit('Необходимо ввести количество билетов натуральными числом до 500000');
     }
 
-    echo "Лотерея $cntGuessNumbers из $cntNumbers. Количество билетов: $cntGuessOption.";
+    echo 'Лотерея ' . $cntGuessNumbers . ' из ' . $cntNumbers . '. Количество билетов: ' . $cntGuessOption;
 
     return;
 }
