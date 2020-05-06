@@ -1,5 +1,6 @@
 <?php
 
+require_once 'engine/function.php';
 $config = require_once 'config/db_config.php';
 require_once 'engine/Database.php';
 $db = new Database($config);
@@ -18,7 +19,7 @@ if ($cntGuessNumbers == 5){
 //------------------------------------------------------------------------------
 // запрашиваем выигрышную комбинацию и суммы выигрышей
 echo "<h3>Лотерея $cntGuessNumbers из $cntNumbers. </h3>
-    <h3>Введите выигрышную комбинацию</h3>
+    <h3>Введите выигрышную комбинацию чисел без совпадений</h3>
     <form method='post'>";
 
 for ($i = 1; $i <= $cntGuessNumbers; $i++){
@@ -46,24 +47,17 @@ echo "<br><label>
 //------------------------------------------------------------------------------------------------------------
 // делаем проверку на ввод данных розыгрыша и разбиваем на два массива: комбинация и суммы
 
-$start=gettimeofday();     // тайминг
+$input_date = validFill($_POST);
 
-foreach ($_POST as $value){
-    if ($value == ''|| !preg_match("|^[\d]*$|", $value)) {
-        exit('Необходимо заполнить все поля натуральными числами, 
-        а для выигрышной комбинации - в диапазоне от 1 до ' . $cntNumbers . ' без совпадений');
-    }
-}
-
-// разбиваем массив _POST на комбинацию и суммы. Комбинацию одновременно проверяем.
 $winComb = [];
 $winSum = [];
 
-foreach ($_POST as $key => $value){
-    if($key <= $cntGuessNumbers){
-        if(1 > $value || $value > $cntNumbers || in_array($value, $winComb)){
-            exit('Числа в комбинации должны быть диапазоне от 1 до ' . $cntNumbers . ' без совпадений');
-        }
+// Разбиваем _POST на комбинацию и суммы.
+foreach ($input_date as $key => $value)
+{
+    // $value = str_replace(' ', '', $value);
+
+    if($key <= $cntGuessNumbers) {
         if (strlen($value) == 1) {
             $value = '0' . $value;
         }
@@ -72,10 +66,20 @@ foreach ($_POST as $key => $value){
         $winSum[$key - $maxCntWinNumbers] = $value;
     }
 }
+
+// Комбинацию проверяем на диапазон и совпадения чисел в кмбинации.
+foreach ($winComb as $val)
+{
+    if($val > $cntNumbers || $cntGuessNumbers > count(array_unique($winComb))){
+        exit('Числа в комбинации должны быть диапазоне от 1 до ' . $cntNumbers . ' без совпадений');
+    }
+}
 sort($winComb);
 
 //------------------------------------------------------------------------------------------------------------
 // вносим изменения в БД
+
+$start=gettimeofday();     // тайминг
 
 // сбрасываем на DEFAULT столбцы count_guessed и win_sum
 $db->query('UPDATE `lotto`.`tickets` SET `count_guessed` = DEFAULT, `win_sum` = DEFAULT');

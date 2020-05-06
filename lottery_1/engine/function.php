@@ -34,19 +34,21 @@ function ticketNumbers($cntGuessOption) {
     return $result;
 }
 
-// функция проверяет на валидность введенных стартовых данных
-function validStart($cntNumbers, $cntGuessOption, $cntGuessNumbers){
-
-    if ($cntNumbers == '') {
-        exit('Необходимо выбрать лотерею');
+/**
+ * function проверяет введённые данные на пустоту и на положительное число
+ * @param array $arr
+ * @return array
+ */
+function validFill($arr){
+    foreach ($arr as $key => $value)
+    {
+        $arr[$key] = str_replace(' ', '', $value);
+        if ($arr[$key] == 0 || !ctype_digit($arr[$key])) {
+            exit('Необходимо правильно заполнить все поля');
+        }
     }
-
-    if ($cntGuessOption == '' || $cntGuessOption > 500000 || !preg_match("|^[\d]*$|", $cntGuessOption)) {
-        exit('Необходимо ввести количество билетов натуральными числом до 500000');
-    }
-
-    echo 'Лотерея ' . $cntGuessNumbers . ' из ' . $cntNumbers . '. Количество билетов: ' . $cntGuessOption;
-
-    return;
+    return $arr;
 }
+
+
 
