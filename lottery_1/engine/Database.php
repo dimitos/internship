@@ -1,60 +1,161 @@
-<?php
+<?php  declare(strict_types=1);
 
 
 class Database
 {
-    private $link;  //здесь будем сохранять соединение
+    /**
+     * The PDO object.
+     * @var
+     */
+    private $pdo;
 
     /**
-     * при создании объекта сразу вызываем соединение
-     * Database constructor.
+     * Connected to the database.
+     * @var bool
      */
-    public function __construct()
+    private $is_connected;
+
+    /**
+     * PDO statement object.
+     * @var PDOStatement
+     */
+    private $statement;
+
+    /**
+     * The database settings.
+     * @var array
+     */
+    private $settings = [];
+
+    /**
+     * The parameters of the SQL query.
+     * @var array
+     */
+    private $parameters = [];
+
+    /**
+     * Database constructor.
+     * @param array $settings
+     */
+    public function __construct(array $settings)
     {
+        $this->settings = $settings;
         $this->connect();
     }
 
     /**
-     * устанавливать соединение с бд, возвращаем текущее подключение $this->link
-     * @return $this
+     * РџРѕРґРєР»СЋС‡РµРЅРёРµ Рє Р±Р°Р·Рµ
      */
     private function connect()
     {
-        $config = require_once './config/db_config.php';
-        $dsn = 'mysql:host=' . $config['host'] . ';port=' . $config['port'] .
-            ';dbname=' . $config['db_name'] . ';charset=' . $config['charset'];
+        $dsn = 'mysql:host=' . $this->settings['host'] . ';port=' . $this->settings['port'] .
+            ';dbname=' . $this->settings['db_name'] . ';charset=' . $this->settings['charset'];
 
-        $this->link = new PDO($dsn, $config['username'], $config['password']);    // запишем в link наше подключение
+        try {
+            $this->pdo = new PDO($dsn, $this->settings['username'], $this->settings['password']);
+            $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+            $this->pdo->setAttribute(\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
 
-        return $this; //
+            $this->is_connected = true;
+        } catch (\PDOException $e) {
+            exit(($e->getMessage()));
+        }
     }
 
     /**
-     * принимает sql запрос и выполняет его
-     * @param $sql
-     * @return mixed
+     * function Р·Р°РєСЂС‹РІР°РµС‚ РїРѕРґРєР»СЋС‡РµРЅРёРµ
      */
-    public function execute($sql)
+    public function closeConnection()
     {
-        $sth = $this->link->prepare($sql); //функция PDO подготавливает запрос к его выполнению
-        return $sth->execute();
+        $this->pdo = null;
     }
 
     /**
-     * принимает sql запрос и возвращает ассоциативный массив из бд
-     * @param $sql
-     * @return array
+     * @param string $query
+     * @param array $parameters
      */
-    public function query($sql)
+    private function init(string $query, array $parameters = [])
     {
-        $sth = $this->link->prepare($sql);
-        $sth->execute();
-        $result = $sth->fetchAll(PDO::FETCH_ASSOC); //мы хотим получить ассоциативный массив из бд
-
-        if($result === false){            // проверим result
-            return [];
+        # РїРѕРґРєР»СЋС‡РµРЅР° Р»Рё Р±Р°Р·Р°
+        if (!$this->is_connected){
+            $this->connect();
         }
 
-        return $result;
+        try {
+            # СЃРѕР·РґР°РµРј РѕР±СЉРµРєС‚ РґР»СЏ РїРѕРґРіРѕС‚РѕРІРєРё Р·Р°РїСЂРѕСЃР°
+            # РїРµСЂРµРґР°РµРј РІ statement Prepare query
+            $this->statement = $this->pdo->prepare($query);
+
+            # РѕР±СЂР°Р±Р°С‚С‹РІР°РµРј parameters РІ Bind
+            $this->bind($parameters);
+
+
+            if (!empty($this->parameters)) {
+                foreach ($this->parameters as $param => $value) {
+                    if (is_int($value[1])) {
+                        $type = \PDO::PARAM_INT;
+                    } elseif (is_bool($value[1])) {
+                        $type = \PDO::PARAM_BOOL;
+                    } elseif (is_null($value[1])) {
+                        $type = \PDO::PARAM_NULL;
+                    } else {
+                        $type = \PDO::PARAM_STR;
+                    }
+
+                    $this->statement->bindValue($value[0], $value[1], $type);
+                }
+            }
+
+            $this->statement->execute();
+
+        } catch (\PDOException $e) {
+            exit(($e->getMessage()));
+        }
+
+        # РѕР±РЅСѓР»СЏРµРј РїР°СЂР°РјРµС‚СЂС‹
+        $this->parameters = [];
+    }
+
+    /**
+     * function РѕР±СЂР°Р±РѕС‚РєР° parameters
+     * @return void
+     * @param array $parameters
+     */
+    private function bind(array $parameters): void    # С„СѓРЅРєС†РёСЏ РЅРёС‡РµРіРѕ РЅРµ РІРѕР·РІСЂР°С‰Р°РµС‚
+    {
+        if (!empty($parameters) and is_array($parameters)) {
+            $columns = array_keys($parameters);
+
+            foreach ($columns as $i=>&$column) {
+                $this->parameters[sizeof($this->parameters)] = [':' . $column, $parameters[$column]];
+            }
+        }
+    }
+
+    /**
+     * function Р·Р°РїСЂРѕСЃР°
+     * @param string $query
+     * @param array $parameters
+     * @param int $mode
+     * @return array|int|null
+     */
+    public function query(string $query, array $parameters = [], $mode = \PDO::FETCH_ASSOC)
+    {
+        # СѓРґР°СЏР»СЏРµРј РїРµСЂРµРЅРѕСЃС‹ Рё РѕР±СЂРµР·Р°РµРј РїСЂРѕР±РµР»С‹ СЃ РЅР°С‡Р°Р»Р° Рё РІ РєРѕРЅС†Рµ
+        $query = trim(str_replace('\r', '', $query));
+
+        $this->init($query, $parameters);
+
+        $raw_statement = explode(' ', preg_replace("/\s+|\t+|\n+/", " ", $query));
+
+        $statement = strtolower($raw_statement[0]);
+
+        if ($statement === 'select' || $statement === 'show') {
+            return $this->statement->fetchAll($mode);
+        } elseif ($statement === 'insert' || $statement === 'update' || $statement === 'delete') {
+            return $this->statement->rowCount();
+        } else {
+            return null;
+        }
     }
 }

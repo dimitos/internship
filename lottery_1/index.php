@@ -7,8 +7,9 @@
 //          win_sum  сумма выигрыша комбинации
 
 require_once 'engine/function.php';
+$config = require_once 'config/db_config.php';
 require_once 'engine/Database.php';
-$db = new Database();
+$db = new Database($config);
 
 echo "<h3>Отметьте, какую лотерею будем проводить</h3>
 <form method='post'>
@@ -48,9 +49,9 @@ fclose($fp);
 //------------------------------------------------------------------------------------------------------
 echo "<h3>Создаем базу</h3>";
 // создаём базу
-$db->execute("DROP DATABASE IF EXISTS `lotto`");
-$db->execute("CREATE DATABASE `lotto`");
-$db->execute("DROP TABLE IF EXISTS `lotto`.`tickets`");
+$db->query("DROP DATABASE IF EXISTS `lotto`");
+$db->query("CREATE DATABASE `lotto`");
+$db->query("DROP TABLE IF EXISTS `lotto`.`tickets`");
 
 // проверка на создание базы
 
@@ -63,20 +64,20 @@ $create_table =
   `count_guessed` INT(2) DEFAULT 0,
   `win_sum` BIGINT(10) DEFAULT 0
   )";
-$db->execute($create_table);
+$db->query($create_table);
 
 // проверка на создание таблицы
 
 // заливаем в БД файл номеров билетов и комбинаций игроков
-$db->execute("USE `lotto`");
+$db->query("USE `lotto`");
 $import_file_db =
     "LOAD DATA  INFILE '/file.txt'
     INTO TABLE tickets
     FIELDS TERMINATED BY ','
     ENCLOSED BY '\"'
     (ticket, combination)";
-$db->execute($import_file_db);
-$db->execute("ALTER TABLE `lotto`.`tickets` ADD INDEX (`combination`, `count_guessed`, `win_summ`)");
+$db->query($import_file_db);
+//$db->query("ALTER TABLE `lotto`.`tickets` ADD INDEX (`combination`, `count_guessed`, `win_summ`)");
 
 unlink('/file.txt');  // удалили промежуточный файл
 

@@ -1,7 +1,9 @@
 <?php
 
+$config = require_once 'config/db_config.php';
 require_once 'engine/Database.php';
-$db = new Database();
+$db = new Database($config);
+
 $row = $db->query("SELECT `combination` FROM `lotto`.`tickets` LIMIT 1");
 $cntGuessNumbers = count(explode(', ', $row[0]['combination']));
 
@@ -76,20 +78,20 @@ sort($winComb);
 // вносим изменения в БД
 
 // сбрасываем на DEFAULT столбцы count_guessed и win_sum
-$db->execute("UPDATE `lotto`.`tickets` SET `count_guessed` = DEFAULT, `win_sum` = DEFAULT");
+$db->query("UPDATE `lotto`.`tickets` SET `count_guessed` = DEFAULT, `win_sum` = DEFAULT");
 
 // вносим в столбец count_guessed количество угаданных чисел в комбинации
 foreach ($winComb as $value) {
     $query =
         "UPDATE `lotto`.`tickets` SET `count_guessed` = (`count_guessed` + 1) WHERE `combination` LIKE '%{$value}%'";
-    $db->execute($query);
+    $db->query($query);
 }
 
 // вносим в столбец win_sum суммы выигрышей
 foreach ($winSum as $key => $value) {
     $query =
         "UPDATE `lotto`.`tickets` SET `win_sum` = {$value} where `lotto`.`tickets`.`count_guessed` = {$key}";
-    $db->execute($query);
+    $db->query($query);
 }
 
 //------------------------------------------------------------------------------------------------------------
