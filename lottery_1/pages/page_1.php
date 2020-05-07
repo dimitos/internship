@@ -27,7 +27,7 @@
 
         if ($total_time > 0) {
             print_r("
-            <h3>Лотерея {$cntGuessNumbers}  из {$cntNumbers} . Количество билетов: {$cntGuessOption}</h3>
+            <h3>Лотерея {$lotto_cnt_guess_num}  из {$lotto_num_range} . Количество билетов: {$lotto_cnt_tickets}</h3>
             <p>База сформирована за {$total_time} сек.</p>
             <a class='button' href='page_2.php'>Перейти к розыгрышу</a>
         ");

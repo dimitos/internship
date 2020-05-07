@@ -2,17 +2,18 @@
 
 /**
  * Функция генерирует массив комбинации чисел игрока
- * @param $cntGuessNumbers, количество угадываемых чисел
- * @param $cntNumbers, из какого количества чисел угадываем
+ * @param $lotto_cnt_guess_num, количество угадываемых чисел
+ * @param $lotto_num_range - диапазон угадываемых чисел
  * @return array, комбинацию чисел
  */
-function combinationNumbers($cntGuessNumbers, $cntNumbers) {
+function combinationNumbers($lotto_cnt_guess_num, $lotto_num_range)
+{
     $result = [];
-    while (count($result) < $cntGuessNumbers)
+    while (count($result) < $lotto_cnt_guess_num)
     {
-        $cnt = $cntGuessNumbers - count($result);
+        $cnt = $lotto_cnt_guess_num - count($result);
         for ($j = 0; $j < $cnt; $j++) {
-            $num = mt_rand(1, $cntNumbers);
+            $num = mt_rand(1, $lotto_num_range);
             if (strlen($num) == 1) {
                 $num = '0' . $num;
             }
@@ -27,14 +28,15 @@ function combinationNumbers($cntGuessNumbers, $cntNumbers) {
 
 /**
  * функция генерирует массив c номерами билетов
- * @param $cntGuessOption, общее количество играющих билетов
+ * @param $lotto_cnt_tickets, общее количество играющих билетов
  * @return array, массив c номерами билетов
  */
-function ticketNumbers($cntGuessOption) {
+function ticketNumbers($lotto_cnt_tickets)
+{
     $result = [];
-    while (count($result) < $cntGuessOption)
+    while (count($result) < $lotto_cnt_tickets)
     {
-        $cnt = $cntGuessOption - count($result);
+        $cnt = $lotto_cnt_tickets - count($result);
         for ($i = 1; $i <= $cnt; $i++) {
             $num = mt_rand(900000000001, 900099999999);
             array_push($result, $num);
@@ -50,7 +52,8 @@ function ticketNumbers($cntGuessOption) {
  * @param array $arr массив элементов
  * @return array $arr массив строковых элементов чисел без пробелов
  */
-function validFill($arr){
+function validFill($arr)
+{
     foreach ($arr as $key => $value)
     {
         $arr[$key] = str_replace(' ', '', $value);

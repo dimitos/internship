@@ -1,89 +1,109 @@
 <?php
 
 require_once dirname(__DIR__) . '\engine/function.php';
-$config = require_once dirname(__DIR__) . '\config/db_config.php';
+$db_config = require_once dirname(__DIR__) . '\config/db_config.php';
 require_once dirname(__DIR__) . '\engine/Database.php';
-$db = new Database($config);
+
+/**
+ * объект класса Database PDO подключение к базе данных
+ */
+$db = new Database($db_config);
 
 $row = $db->query('SELECT `combination` FROM `lotto`.`tickets` LIMIT 1');
-$cntGuessNumbers = count(explode(', ', $row[0]['combination']));
+/**
+ * $lotto_cnt_guess_num - количество угадываемых чисел получаем из имеющийся базы
+ */
+$lotto_cnt_guess_num = count(explode(', ', $row[0]['combination']));
 
-if ($cntGuessNumbers == 5){
-    $cntNumbers = 36;
-    $maxCntWinNumbers = 3;
+$lotto_min_cnt_win = 3;
+if ($lotto_cnt_guess_num == 5){
+    /**
+     * $lotto_cnt_guess_num - количество угадываемых чисел
+     */
+    $lotto_num_range = 36;
+
+    /**
+     * $lotto_min_cnt_win - минимальное количество угаданных чисел для выигрыша
+     */
+    $lotto_min_cnt_win = 3;
 } else {
-    $cntNumbers = 45;
-    $maxCntWinNumbers = 4;
+    $lotto_num_range = 45;
+    $lotto_min_cnt_win = 4;
 }
 
 # ------------------------------------------------------------------------------------------------------------
 # делаем проверку на ввод данных розыгрыша и разбиваем на два массива: комбинация и суммы
+/**
+ * $arr_input_date - массив введенных данных из _POST
+ */
+$arr_input_date = validFill($_POST);
 
-$input_date = validFill($_POST);
-
-$winComb = [];
-$winSum = [];
+$arr_win_comb = [];
+$arr_win_sum = [];
 
 # Разбиваем _POST на комбинацию и суммы.
-foreach ($input_date as $key => $value)
+foreach ($arr_input_date as $key => $value)
 {
-    if($key <= $cntGuessNumbers) {
+    if($key <= $lotto_cnt_guess_num) {
         if (strlen($value) == 1) {
             $value = '0' . $value;
         }
-        $winComb[$key] = $value;
+        $arr_win_comb[$key] = $value;
     } else {
-        $winSum[$key - $maxCntWinNumbers][0] = $value;
+        $arr_win_sum[$key - $lotto_min_cnt_win][0] = $value;
     }
 }
 
 # Комбинацию проверяем на диапазон и совпадения чисел в кмбинации.
-foreach ($winComb as $val)
+foreach ($arr_win_comb as $val)
 {
-    if($val > $cntNumbers || $cntGuessNumbers > count(array_unique($winComb))){
-        exit('Числа в комбинации должны быть диапазоне от 1 до ' . $cntNumbers . ' без совпадений');
+    if($val > $lotto_num_range || $lotto_cnt_guess_num > count(array_unique($arr_win_comb))){
+        exit('Числа в комбинации должны быть диапазоне от 1 до ' . $lotto_num_range . ' без совпадений');
     }
 }
-sort($winComb);
+sort($arr_win_comb);
 
 # ------------------------------------------------------------------------------------------------------------
 # вносим изменения в БД
-
-$start=gettimeofday();     # тайминг
+# тайминг начало
+$start=gettimeofday();
 
 # сбрасываем на DEFAULT столбцы count_guessed и win_sum
 $db->query('UPDATE `lotto`.`tickets` SET `count_guessed` = DEFAULT, `win_sum` = DEFAULT');
 
 # вносим в столбец count_guessed количество угаданных чисел в комбинации
-foreach ($winComb as $value) {
-    $query =
+foreach ($arr_win_comb as $value) {
+    $db_query =
         "UPDATE `lotto`.`tickets` SET `count_guessed` = (`count_guessed` + 1) WHERE `combination` LIKE '%{$value}%'";
-    $db->query($query);
+    $db->query($db_query);
 }
 
 # вносим в базу в столбец win_sum суммы выигрышей
-foreach ($winSum as $key => $value)
+foreach ($arr_win_sum as $key => $value)
 {
-    $query =
-        'UPDATE `lotto`.`tickets` SET `win_sum` = ' . $winSum[$key][0] . ' where `lotto`.`tickets`.`count_guessed` = ' . $key;
-    $db->query($query);
+    $db_query =
+        'UPDATE `lotto`.`tickets` SET `win_sum` = ' . $arr_win_sum[$key][0] . ' where `lotto`.`tickets`.`count_guessed` = ' . $key;
+    $db->query($db_query);
 }
 
 # ------------------------------------------------------------------------------------------------------------
 # выводим резудьтаты розыгрыша
 # из базы берём количество выигрышных билетов по каждой сумме выигрыша и заносим в массив $winSum для вывода
-foreach ($winSum as $key => $value)
+foreach ($arr_win_sum as $key => $value)
 {
-    $winTickets = $db->query('SELECT count(*)  AS `cnt`  FROM `lotto`.`tickets`  WHERE `count_guessed` = ' . $key);
-    $winSum[$key][1] = $winTickets[0]['cnt'];
+    $arr_win_tickets = $db->query('SELECT count(*)  AS `cnt`  FROM `lotto`.`tickets`  WHERE `count_guessed` = ' . $key);
+    $arr_win_sum[$key][1] = $arr_win_tickets[0]['cnt'];
 }
 
 # для вывода
-$comb = implode(', ', $winComb);
-$cntGuessOption = $db->query('SELECT count(*)  AS `cnt`  FROM `lotto`.`tickets`');
-$total_win_tickets = $db->query('SELECT count(*)  AS `cnt`  FROM `lotto`.`tickets`  WHERE `win_sum` != 0 ');
-$db->closeConnection(); # закрываем соединение с базой
+$lotto_comb = implode(', ', $arr_win_comb);
+$lotto_cnt_tickets = $db->query('SELECT count(*)  AS `cnt`  FROM `lotto`.`tickets`');
+$lotto_win_tickets = $db->query('SELECT count(*)  AS `cnt`  FROM `lotto`.`tickets`  WHERE `win_sum` != 0 ');
 
+# закрываем соединение с базой
+$db->closeConnection();
+
+# тайминг конец
 $end=gettimeofday();
 $total_time = (float)($end['sec'] - $start['sec']);
 
