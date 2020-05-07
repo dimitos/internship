@@ -1,9 +1,15 @@
 <?php
 
-// функция генерирует комбинацию из cntGuessNumbers чисел
+/**
+ * Функция генерирует массив комбинации чисел игрока
+ * @param $cntGuessNumbers, количество угадываемых чисел
+ * @param $cntNumbers, из какого количества чисел угадываем
+ * @return array, комбинацию чисел
+ */
 function combinationNumbers($cntGuessNumbers, $cntNumbers) {
     $result = [];
-    while (count($result) < $cntGuessNumbers) {
+    while (count($result) < $cntGuessNumbers)
+    {
         $cnt = $cntGuessNumbers - count($result);
         for ($j = 0; $j < $cnt; $j++) {
             $num = mt_rand(1, $cntNumbers);
@@ -19,10 +25,15 @@ function combinationNumbers($cntGuessNumbers, $cntNumbers) {
     return $result;
 }
 
-// функция генерирует массив номеров билетов
+/**
+ * функция генерирует массив c номерами билетов
+ * @param $cntGuessOption, общее количество играющих билетов
+ * @return array, массив c номерами билетов
+ */
 function ticketNumbers($cntGuessOption) {
     $result = [];
-    do {
+    while (count($result) < $cntGuessOption)
+    {
         $cnt = $cntGuessOption - count($result);
         for ($i = 1; $i <= $cnt; $i++) {
             $num = mt_rand(900000000001, 900099999999);
@@ -30,14 +41,14 @@ function ticketNumbers($cntGuessOption) {
         }
         $result = array_unique($result);
     }
-    while (count($result) < $cntGuessOption);
+
     return $result;
 }
 
 /**
- * function проверяет введённые данные на пустоту и на положительное число
- * @param array $arr
- * @return array
+ * function проверяет введённые данные на 0 и на положительное целое число
+ * @param array $arr массив элементов
+ * @return array $arr массив строковых элементов чисел без пробелов
  */
 function validFill($arr){
     foreach ($arr as $key => $value)

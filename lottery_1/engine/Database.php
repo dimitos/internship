@@ -53,11 +53,11 @@ class Database
 
         try {
             $this->pdo = new PDO($dsn, $this->settings['username'], $this->settings['password']);
-            $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-            $this->pdo->setAttribute(\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
+            $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $this->pdo->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
 
             $this->is_connected = true;
-        } catch (\PDOException $e) {
+        } catch (PDOException $e) {
             exit(($e->getMessage()));
         }
     }
@@ -93,13 +93,13 @@ class Database
             if (!empty($this->parameters)) {
                 foreach ($this->parameters as $param => $value) {
                     if (is_int($value[1])) {
-                        $type = \PDO::PARAM_INT;
+                        $type = PDO::PARAM_INT;
                     } elseif (is_bool($value[1])) {
-                        $type = \PDO::PARAM_BOOL;
+                        $type = PDO::PARAM_BOOL;
                     } elseif (is_null($value[1])) {
-                        $type = \PDO::PARAM_NULL;
+                        $type = PDO::PARAM_NULL;
                     } else {
-                        $type = \PDO::PARAM_STR;
+                        $type = PDO::PARAM_STR;
                     }
 
                     $this->statement->bindValue($value[0], $value[1], $type);
@@ -108,7 +108,7 @@ class Database
 
             $this->statement->execute();
 
-        } catch (\PDOException $e) {
+        } catch (PDOException $e) {
             exit(($e->getMessage()));
         }
 
@@ -139,7 +139,7 @@ class Database
      * @param int $mode
      * @return array|int|null
      */
-    public function query(string $query, array $parameters = [], $mode = \PDO::FETCH_ASSOC)
+    public function query(string $query, array $parameters = [], $mode = PDO::FETCH_ASSOC)
     {
         # удаяляем переносы и обрезаем пробелы с начала и в конце
         $query = trim(str_replace('\r', '', $query));
